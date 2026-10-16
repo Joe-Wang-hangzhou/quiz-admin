@@ -8,7 +8,8 @@
     "serve": "vite --host 127.0.0.1",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:production": "npm run build && node tests/production.mjs"
   },
   "dependencies": {
     "element-ui": "2.15.14",

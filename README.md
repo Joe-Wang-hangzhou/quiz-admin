@@ -27,6 +27,7 @@ npm run dev
 
 ```sh
 npm test
+npm run test:production
 npm run build
 npm run preview
 ```
