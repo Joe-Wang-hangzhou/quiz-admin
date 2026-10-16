@@ -21,6 +21,7 @@ const makeQuestion = (title) => ({
 beforeEach(() => {
   localStorage.clear();
   wrapper = mount(App, {
+    attachTo: document.body,
     mocks: {
       $message: { success: vi.fn(), error: vi.fn() },
       $confirm: vi.fn().mockResolvedValue("confirm"),
@@ -52,6 +53,33 @@ describe("Quiz 管理后台", () => {
     wrapper.vm.search();
     expect(wrapper.vm.page).toBe(1);
     expect(wrapper.vm.filteredRows).toHaveLength(2);
+  });
+
+  it("选择分类后点击查询才应用，并与关键词组合筛选", async () => {
+    wrapper.vm.page = 2;
+    await settle();
+    const select = wrapper.findComponent({ name: "ElSelect" });
+    await select.find("input").trigger("click");
+    await settle();
+    const htmlOption = select.findAllComponents({ name: "ElOption" }).wrappers
+      .find((option) => option.props("value") === "HTML");
+    await htmlOption.trigger("click");
+    await settle();
+    expect(wrapper.vm.category).toBe("HTML");
+    expect(wrapper.vm.filteredRows).toHaveLength(10);
+    await button("查询").trigger("click");
+    await settle();
+    expect(wrapper.vm.page).toBe(1);
+    expect(wrapper.vm.filteredRows.map((row) => row.id)).toEqual([3, 6]);
+    expect(wrapper.findAll(".el-table__body tbody tr")).toHaveLength(2);
+    await wrapper.find("#keyword").setValue("超链接");
+    await button("查询").trigger("click");
+    await settle();
+    expect(wrapper.vm.filteredRows.map((row) => row.id)).toEqual([6]);
+    await button("重置").trigger("click");
+    await settle();
+    expect(wrapper.vm.filteredRows).toHaveLength(10);
+    expect(wrapper.vm.category).toBe("");
   });
 
   it("使用实际弹窗表单添加和修改题目，刷新后保留", async () => {

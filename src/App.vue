@@ -95,7 +95,6 @@
                 id="category"
                 v-model="category"
                 placeholder="全部分类"
-                @change="search"
                 ><el-option label="全部分类" value="" /><el-option
                   v-for="item in categories"
                   :key="item"
@@ -333,6 +332,7 @@ export default {
       keyword: "",
       appliedKeyword: "",
       category: "",
+      appliedCategory: "",
       page: 1,
       pageSize: 5,
       dialogVisible: false,
@@ -388,8 +388,8 @@ export default {
             .toLowerCase()
             .includes(this.appliedKeyword.toLowerCase()) &&
           (!this.isQuestion ||
-            !this.category ||
-            row.category === this.category),
+            !this.appliedCategory ||
+            row.category === this.appliedCategory),
       );
     },
     pageRows() {
@@ -408,12 +408,14 @@ export default {
   methods: {
     search() {
       this.appliedKeyword = this.keyword.trim();
+      this.appliedCategory = this.category;
       this.page = 1;
     },
     resetSearch() {
       this.keyword = "";
       this.appliedKeyword = "";
       this.category = "";
+      this.appliedCategory = "";
       this.page = 1;
     },
     openEditor(row) {
