@@ -1,0 +1,33 @@
+name: Verify public deployment
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check page and static assets without login
+        shell: bash
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          const origin = 'https://quiz-admin-course-2026.vercel.app';
+          const response = await fetch(origin, { signal: AbortSignal.timeout(30000) });
+          assert.equal(response.status, 200);
+          const html = await response.text();
+          assert.ok(html.includes('<title>Quiz 题库管理</title>'));
+          const assets = [...html.matchAll(/(?:src|href)="(\/assets\/[^\"]+)"/g)].map(match => match[1]);
+          assert.ok(assets.some(path => path.endsWith('.js')));
+          assert.ok(assets.some(path => path.endsWith('.css')));
+          for (const path of [...assets, '/favicon.svg']) {
+            const asset = await fetch(origin + path, { signal: AbortSignal.timeout(30000) });
+            assert.equal(asset.status, 200, path);
+            assert.ok((await asset.text()).length > 0, path);
+            console.log('200', path);
+          }
+          console.log('Public page and all entry assets are accessible without authentication.');
+          JS
